@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Incentivos - Jefe Visual</title>
+  <style>
+    :root {
+      --primary-blue: #005EC4;
+      --dark-blue: #0033A0;
+      --accent-yellow: #FFD100;
+      --yellow-hover: #e6bc00;
+      --gray-bg: #F4F6F9;
+      --text-color: #222222;
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--gray-bg);
+      color: var(--text-color);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      background-color: var(--primary-blue);
+      border-bottom: 4px solid var(--accent-yellow);
+      color: #ffffff;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 1.5rem auto;
+      padding: 0 1rem;
+      width: 100%;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.4rem;
+      color: var(--dark-blue);
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--primary-blue);
+    }
+
+    .btn-calc {
+      width: 100%;
+      background-color: var(--accent-yellow);
+      color: var(--dark-blue);
+      border: none;
+      padding: 0.9rem;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-calc:hover {
+      background-color: var(--yellow-hover);
+    }
+
+    .results {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95rem;
+    }
+
+    .result-row:last-child {
+      border-bottom: none;
+    }
+
+    .result-row.total {
+      background-color: #EBF3FC;
+      margin: 1rem -1.5rem -1.5rem -1.5rem;
+      padding: 1.25rem 1.5rem;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--dark-blue);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.75rem;
+      color: #666;
+      margin-top: auto;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Esquema de Incentivos</h1>
+    <p>Calculadora para Jefe Visual</p>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <form id="incentiveForm">
+        <div class="form-group">
+          <label for="metaCentro">Meta de Venta del Centro ($):</label>
+          <input type="number" id="metaCentro" placeholder="Ej. 970790" min="1" step="any" required>
+        </div>
+
+        <div class="form-group">
+          <label for="ventaCentro">Venta Lograda del Centro ($):</label>
+          <input type="number" id="ventaCentro" placeholder="Ej. 1040344" min="0" step="any" required>
+        </div>
+
+        <div class="form-group">
+          <label for="faltante">Rango de Faltante de Tienda (%):</label>
+          <select id="faltante" required>
+            <option value="1.1">Menor a 1.0% (Multiplicador 1.1)</option>
+            <option value="1.0" selected>Entre 1.0% y 1.5% (Multiplicador 1.0)</option>
+            <option value="0.9">Mayor o igual a 1.5% (Multiplicador 0.9)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn-calc">Calcular Incentivo</button>
+      </form>
+    </div>
+
+    <div class="card results" id="resultsCard">
+      <h3 style="color: var(--dark-blue); margin-bottom: 1rem; font-size: 1.1rem;">Resumen de Resultados</h3>
+      
+      <div class="result-row">
+        <span>Cumplimiento Venta Centro:</span>
+        <strong id="resCumplimiento">0%</strong>
+      </div>
+
+      <div class="result-row">
+        <span>Incentivo Base por Venta:</span>
+        <span id="resIncentivoBase">$0.00</span>
+      </div>
+
+      <div class="result-row">
+        <span>Multiplicador Faltante:</span>
+        <span id="resMultiplicador">x1.0</span>
+      </div>
+
+      <div class="result-row total">
+        <span>Incentivo Final:</span>
+        <span id="resTotal">$0.00</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Esquema de Incentivos - Venta de Centro y Faltante
+  </footer>
+
+  <script>
+    document.getElementById('incentiveForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const meta = parseFloat(document.getElementById('metaCentro').value);
+      const venta = parseFloat(document.getElementById('ventaCentro').value);
+      const multFaltante = parseFloat(document.getElementById('faltante').value);
+
+      if (!meta || meta <= 0) return;
+
+      // 1. Porcentaje de cumplimiento
+      const porcentajeCumplimiento = (venta / meta) * 100;
+
+      // 2. Incentivo Base según cumplimiento de Meta de Centro
+      let incentivoBase = 0;
+
+      if (porcentajeCumplimiento < 95) {
+        incentivoBase = 0;
+      } else if (porcentajeCumplimiento < 100) {
+        incentivoBase = 800;
+      } else if (porcentajeCumplimiento < 105) {
+        incentivoBase = 1100;
+      } else if (porcentajeCumplimiento < 110) {
+        incentivoBase = 1500;
+      } else if (porcentajeCumplimiento < 115) {
+        incentivoBase = 1900;
+      } else if (porcentajeCumplimiento < 120) {
+        incentivoBase = 2300;
+      } else if (porcentajeCumplimiento < 125) {
+        incentivoBase = 2800;
+      } else {
+        incentivoBase = 3300;
+      }
+
+      // 3. Incentivo Final aplicando multiplicador de faltante
+      const incentivoFinal = incentivoBase * multFaltante;
+
+      // Formatear Moneda
+      const fmt = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' });
+
+      // Renderizar resultados
+      document.getElementById('resCumplimiento').innerText = `${porcentajeCumplimiento.toFixed(1)}%`;
+      document.getElementById('resIncentivoBase').innerText = fmt.format(incentivoBase);
+      document.getElementById('resMultiplicador').innerText = `x${multFaltante.toFixed(1)}`;
+      document.getElementById('resTotal').innerText = fmt.format(incentivoFinal);
+
+      // Mostrar tarjeta de resultados
+      document.getElementById('resultsCard').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
